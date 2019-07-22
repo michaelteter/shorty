@@ -34,9 +34,12 @@ defmodule ShortyTest do
 
   test "flush empties all state" do
     empty_state = %{urls_by_id: %{}}
-    initial_state = %{urls_by_id: %{1 => "foo", 2 => "bar"}}
+    initial_state = %{urls_by_id:
+                      %{1 => "https://example.com/foo",
+                        2 => "https://example.com/bar"}}
+
     {:ok, pid} = Shorty.start_server(initial_state)
-    assert initial_state = Shorty.get_state(pid)
+    assert ^initial_state = Shorty.get_state(pid)
     assert ^empty_state = Shorty.flush(pid)
     assert ^empty_state = Shorty.get_state(pid)
   end
