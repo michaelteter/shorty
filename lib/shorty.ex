@@ -17,6 +17,8 @@ defmodule Shorty do
 
   def count(pid), do: GenServer.call(pid, {:count})
 
+  def get_stats(pid), do: GenServer.call(pid, {:get_stats})
+
   # --- Server ---
 
   def init(nil), do: {:ok, empty_state()}
@@ -44,6 +46,10 @@ defmodule Shorty do
     {:reply, Shorty.count_urls(state), state}
   end
 
+  def handle_call({:get_stats}, _from, state) do
+    {:reply, state, state}
+  end
+
   # --- Util ---
 
   def empty_state() do
@@ -59,5 +65,11 @@ defmodule Shorty do
 
   def count_urls(state) do
     Enum.count(state[:urls_by_id])
+  end
+
+  def hostname_from_url(url) do
+    Regex.scan(~r/^.*\/\/([^\/:]*)/, url)
+    |> List.flatten()
+    |> List.last()
   end
 end

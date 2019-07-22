@@ -51,4 +51,28 @@ defmodule ShortyTest do
     Shorty.shorten(pid, "https://example.com/bar")
     assert 2 = Shorty.count(pid)
   end
+
+  test "extracts hostname from url" do
+    assert "example.com" = Shorty.hostname_from_url("https://example.com")
+    assert "example.com" = Shorty.hostname_from_url("http://example.com")
+    assert "example.com" = Shorty.hostname_from_url("http://example.com:8080")
+    assert "dev.example.com" = Shorty.hostname_from_url("http://dev.example.com:8080")
+    assert "短.co" = Shorty.hostname_from_url("http://短.co")
+  end
+
+  @tag :not_yet
+  test "gets stats: counts of urls by each hostname" do
+    {:ok, pid} = Shorty.start_server()
+    Shorty.shorten(pid, "https://example.com/foo")
+    Shorty.shorten(pid, "https://example.com/bar")
+    Shorty.shorten(pid, "https://another.com/one")
+    Shorty.shorten(pid, "https://another.com/two")
+    Shorty.shorten(pid, "https://somuch.com/host")
+    
+    expected = %{"example.com" => 2,
+                 "another.com" => 2,
+                 "somuch.com"  => 1}
+
+    assert ^expected = Shorty.get_stats(pid)
+  end
 end
