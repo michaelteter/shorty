@@ -30,7 +30,11 @@ defmodule Shorty do
 
   def handle_call({:shorten, url}, _from, state) do
     url_id = Enum.count(state[:urls_by_id]) + 1
-    state = put_in(state, [:urls_by_id, url_id], url)
+    state = put_in(state, 
+                   [:urls_by_id, url_id], 
+                   %{url: url,
+                     hostname: Shorty.hostname_from_url(url),
+                     clicks: 0})
     {:reply, url_id, state}
   end
 
@@ -60,7 +64,7 @@ defmodule Shorty do
   end
 
   def url_from_id(url_id, state) do
-    state[:urls_by_id][url_id]
+    state[:urls_by_id][url_id][:url]
   end
 
   def count_urls(state) do

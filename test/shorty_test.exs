@@ -18,8 +18,10 @@ defmodule ShortyTest do
     assert 1 = Shorty.shorten(pid, url1)
     url2 = "https://example.com/bar"
     assert 2 = Shorty.shorten(pid, url2)
-    assert %{urls_by_id: %{1 => url1,
-                           2 => url2}} == Shorty.get_state(pid)
+
+    expected = %{1 => %{clicks: 0, hostname: "example.com", url: "https://example.com/foo"}, 
+                 2 => %{clicks: 0, hostname: "example.com", url: "https://example.com/bar"}}
+    assert ^expected = Shorty.get_state(pid)[:urls_by_id]
   end
 
   test "gets a URL from its shortened id" do
