@@ -21,4 +21,15 @@ defmodule ShortyTest do
     assert %{urls_by_id: %{1 => url1,
                            2 => url2}} == Shorty.get_state(pid)
   end
+
+  test "gets a URL from its shortened id" do
+    {:ok, pid} = Shorty.start_server()
+    url1 = "https://example.com/foo"
+    Shorty.shorten(pid, url1)
+    url2 = "https://example.com/bar"
+    Shorty.shorten(pid, url2)
+    assert url1 = Shorty.get(pid, 1)
+    assert url2 = Shorty.get(pid, 2)
+  end
+
 end

@@ -15,6 +15,10 @@ defmodule Shorty do
     GenServer.call(pid, {:shorten, url})
   end
 
+  def get(pid, url_id) do
+    GenServer.call(pid, {:get, url_id})
+  end
+
   # --- Server ---
 
   def init(nil), do: {:ok, new_state()}
@@ -30,6 +34,10 @@ defmodule Shorty do
     {:reply, url_id, state}
   end
 
+  def handle_call({:get, url_id}, _from, state) do
+    {:reply, Shorty.url_from_id(url_id, state), state}
+  end
+
   # --- Util ---
 
   def new_state() do
@@ -37,5 +45,9 @@ defmodule Shorty do
       # urls: %{},
       # urls_by_hostname: %{}
     }
+  end
+
+  def url_from_id(url_id, state) do
+    state[:urls_by_id][url_id]
   end
 end
