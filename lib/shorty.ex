@@ -32,9 +32,16 @@ defmodule Shorty do
     url_id = Enum.count(state[:urls_by_id]) + 1
     state = put_in(state, 
                    [:urls_by_id, url_id], 
-                   %{url: url,
-                     hostname: Shorty.hostname_from_url(url),
-                     clicks: 0})
+                   %{url: url, clicks: 0})
+
+    hostname = Shorty.hostname_from_url(url)
+    state = Map.replace!(state,
+                         :urls_by_hostname,
+                         Map.update(state[:urls_by_hostname],
+                                    hostname,
+                                    [url_id],
+                                    &([url_id | &1])))
+
     {:reply, url_id, state}
   end
 
@@ -50,17 +57,22 @@ defmodule Shorty do
     {:reply, Shorty.count_urls(state), state}
   end
 
+  @doc """
+  Returns a map of hostnames and the count of URLs for each.
+  """
   def handle_call({:get_stats}, _from, state) do
-    {:reply, state, state}
+    counts = Enum.into(state[:urls_by_hostname],
+                       %{},
+                       fn {k, v} -> {k, Enum.count(v)} end)
+
+    {:reply, counts, state}
   end
 
   # --- Util ---
 
   def empty_state() do
     %{urls_by_id: %{},
-      # urls: %{},
-      # urls_by_hostname: %{}
-    }
+      urls_by_hostname: %{}}
   end
 
   def url_from_id(url_id, state) do
