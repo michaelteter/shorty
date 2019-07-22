@@ -1,18 +1,20 @@
 defmodule Shorty do
-  @moduledoc """
-  Documentation for Shorty.
-  """
+  use GenServer
 
-  @doc """
-  Hello world.
+  # --- API ---
 
-  ## Examples
+  def start_server(initial_state \\ %{}) do
+    GenServer.start_link(__MODULE__, initial_state)
+  end
 
-      iex> Shorty.hello()
-      :world
+  # --- Server ---
 
-  """
-  def hello do
-    :world
+  def init(), do: {:ok, new_state()}
+  def init(initial_state), do: {:ok, initial_state}
+
+  # --- Util ---
+
+  def new_state() do
+    %{}
   end
 end
