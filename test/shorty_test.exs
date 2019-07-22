@@ -32,4 +32,12 @@ defmodule ShortyTest do
     assert url2 = Shorty.get(pid, 2)
   end
 
+  test "flush empties all state" do
+    empty_state = %{urls_by_id: %{}}
+    initial_state = %{sample: "data"}
+    {:ok, pid} = Shorty.start_server(initial_state)
+    assert initial_state = Shorty.get_state(pid)
+    assert ^empty_state = Shorty.flush(pid)
+    assert ^empty_state = Shorty.get_state(pid)
+  end
 end
