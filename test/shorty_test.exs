@@ -44,4 +44,11 @@ defmodule ShortyTest do
     assert ^empty_state = Shorty.get_state(pid)
   end
 
+  test "counts number of urls (not unique)" do
+    {:ok, pid} = Shorty.start_server()
+    Shorty.shorten(pid, "https://example.com/foo")
+    assert 1 = Shorty.count(pid)
+    Shorty.shorten(pid, "https://example.com/bar")
+    assert 2 = Shorty.count(pid)
+  end
 end

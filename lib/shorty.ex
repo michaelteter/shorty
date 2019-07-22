@@ -7,21 +7,15 @@ defmodule Shorty do
     GenServer.start_link(__MODULE__, initial_state)
   end
 
-  def get_state(pid) do
-    GenServer.call(pid, {:get_state})
-  end
+  def get_state(pid), do: GenServer.call(pid, {:get_state})
 
-  def shorten(pid, url) do
-    GenServer.call(pid, {:shorten, url})
-  end
+  def shorten(pid, url), do: GenServer.call(pid, {:shorten, url})
 
-  def get(pid, url_id) do
-    GenServer.call(pid, {:get, url_id})
-  end
+  def get(pid, url_id), do: GenServer.call(pid, {:get, url_id})
 
-  def flush(pid) do
-    GenServer.call(pid, {:flush})
-  end
+  def flush(pid), do: GenServer.call(pid, {:flush})
+
+  def count(pid), do: GenServer.call(pid, {:count})
 
   # --- Server ---
 
@@ -46,6 +40,10 @@ defmodule Shorty do
     {:reply, empty_state(), empty_state()}
   end
 
+  def handle_call({:count}, _from, state) do
+    {:reply, Shorty.count_urls(state), state}
+  end
+
   # --- Util ---
 
   def empty_state() do
@@ -57,5 +55,9 @@ defmodule Shorty do
 
   def url_from_id(url_id, state) do
     state[:urls_by_id][url_id]
+  end
+
+  def count_urls(state) do
+    Enum.count(state[:urls_by_id])
   end
 end
