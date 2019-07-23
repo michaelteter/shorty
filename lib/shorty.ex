@@ -19,6 +19,9 @@ defmodule Shorty do
 
   def get_stats(pid), do: GenServer.call(pid, {:get_stats})
 
+  def get_click_stats(pid), do: GenServer.call(pid, {:get_click_stats})
+  def get_click_stats(pid, url_id), do: GenServer.call(pid, {:get_click_stats, url_id})
+
   # --- Server ---
 
   def init(nil), do: {:ok, empty_state()}
@@ -46,7 +49,12 @@ defmodule Shorty do
   end
 
   def handle_call({:get, url_id}, _from, state) do
-    {:reply, Shorty.url_from_id(url_id, state), state}
+    url = Shorty.url_from_id(url_id, state)
+    state = case url do
+      nil -> state
+      _ -> Shorty.inc_click_count(url_id, state)
+    end
+    {:reply, url, state}
   end
 
   def handle_call({:flush}, _from, _state) do 
@@ -68,6 +76,18 @@ defmodule Shorty do
     {:reply, counts, state}
   end
 
+  def handle_call({:get_click_stats, url_id}, _from, state) do
+    clicks = state[:urls_by_id][url_id][:clicks]
+    {:reply, clicks, state}
+  end
+
+  def handle_call({:get_click_stats}, _from, state) do
+    clicks = Enum.into(state[:urls_by_id],
+                       %{},
+                       fn {k, v} -> {k, v[:clicks]} end)
+    {:reply, clicks, state}
+  end
+
   # --- Util ---
 
   def empty_state() do
@@ -87,5 +107,9 @@ defmodule Shorty do
     Regex.scan(~r/^.*\/\/([^\/:]*)/, url)
     |> List.flatten()
     |> List.last()
+  end
+
+  def inc_click_count(url_id, state) do
+    update_in(state, [:urls_by_id, url_id, :clicks], &(&1 + 1))
   end
 end

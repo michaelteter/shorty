@@ -39,6 +39,26 @@ defmodule ShortyTest do
     Shorty.shorten(pid, url2)
     assert url1 = Shorty.get(pid, 1)
     assert url2 = Shorty.get(pid, 2)
+    refute Shorty.get(pid, 1234)
+  end
+
+  test "tracks clicks on URL get" do
+    {:ok, pid} = Shorty.start_server()
+    url1 = "https://example.com/foo"
+    Shorty.shorten(pid, url1)
+    url2 = "https://example.com/bar"
+    Shorty.shorten(pid, url2)
+    Shorty.get(pid, 1)
+    Shorty.get(pid, 2)
+    Shorty.get(pid, 1)
+    Shorty.get(pid, 1234)
+    clicks = Shorty.get_click_stats(pid)
+    assert clicks[1] == 2
+    assert clicks[2] == 1
+    refute clicks[1234]
+    assert 2 == Shorty.get_click_stats(pid, 1)
+    assert 1 == Shorty.get_click_stats(pid, 2)
+    refute Shorty.get_click_stats(pid, 1234)
   end
 
   test "flush empties all state" do
